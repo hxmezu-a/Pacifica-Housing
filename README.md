@@ -1,2 +1,2 @@
-# kodari-202608-1zkjn868
-Created with kodari.ai
+# Pacifica Housing Plugin
+Created by MC-DistrictX Developer Team
