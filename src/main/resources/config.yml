@@ -1,0 +1,14 @@
+transition:
+  delay-seconds: 3
+  blindness-duration-seconds: 3
+selling:
+  refund-percent: 60.0
+limits:
+  max-houses-per-player: -1
+restrictions:
+  weapons: true
+  golden-chestplate: true
+  weapon-materials:
+    - BOW
+    - CROSSBOW
+    - TRIDENT

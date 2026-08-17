@@ -1,0 +1,31 @@
+name: Pacifica-Housing
+version: ${version}
+main: com.kodari.housing.HousingPlugin
+api-version: '1.20'
+author: Kodari
+softdepend:
+  - Vault
+  - KodariCurrency
+  - CrackShot
+  - WeaponMechanics
+commands:
+  houses:
+    description: Open player house menus
+    usage: /houses [owned|agent]
+    aliases: [house]
+  housesadmin:
+    description: Administrative house management
+    usage: /housesadmin <create|adddoor|addvault|setoutside|setinside|grant|reload>
+permissions:
+  kodarihousing.admin:
+    description: Manage house definitions and ownership
+    default: op
+  houses.ownlimit.*:
+    description: Set the maximum number of houses a player can own through a numbered child permission
+    default: false
+  house.timer.*:
+    description: Set the house entry timer through a numbered child permission
+    default: false
+  house.timer.instant:
+    description: Enter houses without a timer
+    default: false

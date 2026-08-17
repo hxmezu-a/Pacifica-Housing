@@ -1,0 +1,313 @@
+owned:
+  size: 54
+  title: '&8Your Houses'
+owned-details:
+  size: 36
+  title: '&8House: &f{house}'
+  info:
+    slots: [10]
+    material: BARREL
+    name: '&bHouse Vault'
+    lore:
+      - '&7House: &f{house}'
+      - '&7Type: &f{type}'
+      - '&7Price: &f{price}'
+      - '&7Vaults: &f{vaults}'
+      - '&eClick to open the linked vault'
+  owner:
+    slots: [12]
+    material: PLAYER_HEAD
+    name: '&bOwner: &f{owner}'
+    lore:
+      - '&7This house is owned by &f{owner}'
+  teleport:
+    slots: [14]
+    material: CHEST_MINECART
+    name: '&aTeleport to House'
+    lore:
+      - '&7Teleport outside your house'
+      - ''
+      - '&eClick to teleport'
+  close:
+    slots: [16]
+    material: BARRIER
+    name: '&cClose'
+    lore: []
+  bidding:
+    slots: [25]
+    material: GOLD_INGOT
+    name: '&6Auction / Bidding'
+    lore:
+      - '&7Put this premium house up for auction'
+      - '&eClick to configure'
+real-estate-agent:
+  size: 27
+  title: '&8Real Estate Agent'
+  available:
+    slots: [11]
+    material: BOOK
+    name: '&aAvailable Houses'
+    lore:
+      - '&7Browse regular, premium, and luxury houses'
+      - '&eClick to view'
+  auctions:
+    slots: [15]
+    material: GOLD_BLOCK
+    name: '&6House Auctions / Bidding'
+    lore:
+      - '&7View active premium house auctions'
+      - '&eClick to view'
+auction-menu:
+  size: 27
+  title: '&8Auctions / Bids'
+  list:
+    slots: [11]
+    material: BOOK
+    name: '&bAuction / Bid List'
+    lore:
+      - '&7View all active premium house auctions'
+      - '&eClick to view'
+  create:
+    slots: [13]
+    material: GOLD_INGOT
+    name: '&6Create Auction / Bid'
+    lore:
+      - '&7Auction one of your premium houses'
+      - '&eClick to select a house'
+  information:
+    slots: [15]
+    material: PAPER
+    name: '&eAuction Information'
+    lore:
+      - '&7Learn how auctions and bids work'
+      - '&eClick to view'
+  close:
+    slots: [22]
+    material: BARRIER
+    name: '&cClose'
+    lore: []
+auction-create:
+  size: 54
+  title: '&8Create Auction / Bid'
+  item:
+    material: IRON_DOOR
+    name: '&b{house}'
+    lore:
+      - '&7Type: &f{type}'
+      - '&eClick to select this house'
+auction-information:
+  size: 27
+  title: '&8Auction Information'
+  info:
+    slots: [4]
+    material: PAPER
+    name: '&eHow House Auctions Work'
+    lore:
+      - '&7Only owned Premium Houses can be auctioned.'
+      - '&7Every auction lasts 12 hours.'
+      - '&7Diamond bid: &fD:<diamonds>'
+      - '&7Combined bid: &fC:<diamonds>/<balance>'
+      - '&7The highest valid bid wins.'
+      - '&7Losing bids are refunded automatically.'
+  close:
+    slots: [22]
+    material: BARRIER
+    name: '&cClose'
+    lore: []
+available-categories:
+  size: 27
+  title: '&8Available Houses'
+  regular:
+    slots: [11]
+    material: OAK_DOOR
+    name: '&aRegular Houses'
+    lore:
+      - '&7Browse available regular houses'
+      - '&eClick to view'
+  premium:
+    slots: [13]
+    material: IRON_DOOR
+    name: '&bPremium Houses'
+    lore:
+      - '&7Browse available premium houses'
+      - '&eClick to view'
+  luxury:
+    slots: [15]
+    material: CRIMSON_DOOR
+    name: '&dLuxury Houses'
+    lore:
+      - '&7Browse available luxury houses'
+      - '&eClick to view'
+available-houses:
+  size: 54
+  title: '&8Available {type} Houses'
+available-details:
+  size: 36
+  title: '&8House: &f{house}'
+  info:
+    slots: [10]
+    material: BOOK
+    name: '&bHouse Information'
+    lore:
+      - '&7House: &f{house}'
+      - '&7Type: &f{type}'
+      - '&7Price: &f{price}'
+      - '&7Availability: &a{availability}'
+  chests:
+    slots: [19]
+    material: CHEST
+    name: '&bChests'
+    lore:
+      - '%vault_counts%'
+  preview:
+    slots: [13]
+    material: CHEST_MINECART
+    name: '&ePreview House'
+    lore:
+      - '&7Teleport for a preview'
+      - '&7Uses the configured transition timer'
+      - ''
+      - '&eClick to preview'
+  purchase:
+    slots: [15]
+    material: EMERALD
+    name: '&aPurchase House'
+    lore:
+      - '&7Open the purchase menu'
+      - '&eClick to purchase'
+  close:
+    slots: [31]
+    material: BARRIER
+    name: '&cClose'
+    lore: []
+purchase:
+  size: 9
+  title: '&8Purchase: &f{house}'
+  buy:
+    slots: [0, 1, 2, 3]
+    material: GREEN_WOOL
+    name: '&aBuy This House'
+    lore:
+      - '&7Price: &f{price}'
+      - '&7Type: &f{type}'
+      - ''
+      - '&eClick to purchase'
+  cancel:
+    slots: [5, 6, 7, 8]
+    material: RED_WOOL
+    name: '&cCancel'
+    lore:
+      - '&7Close this menu'
+owner:
+  size: 27
+  title: '&8Manage: &f{house}'
+  info:
+    slots: [10]
+    material: BOOK
+    name: '&bHouse Information'
+    lore:
+      - '&7House: &f{house}'
+      - '&7Type: &f{type}'
+      - '&7Price: &f{price}'
+      - '&7Vaults: &f{vaults}'
+  vault:
+    slots: [15]
+    material: CHEST
+    name: '&bVaults / Chests'
+    lore:
+      - '&7Linked vaults: &f{vaults}'
+      - '&7Open the vault from House Information.'
+  sell:
+    slots: [13]
+    material: GOLD_INGOT
+    name: '&6Sell House'
+    lore:
+      - '&7Refund: &f{refund}'
+      - ''
+      - '&eClick to continue'
+  close:
+    slots: [16]
+    material: BARRIER
+    name: '&cClose'
+    lore: []
+sell-confirm:
+  size: 9
+  title: '&8Sell House: &f{house}'
+  confirm:
+    slots: [0, 1, 2, 3]
+    material: GREEN_WOOL
+    name: '&aConfirm Sale'
+    lore:
+      - '&7Refund: &f{refund}'
+      - ''
+      - '&eClick to confirm'
+  cancel:
+    slots: [5, 6, 7, 8]
+    material: RED_WOOL
+    name: '&cCancel'
+    lore: []
+auction-setup:
+  size: 27
+  title: '&8Auction: &f{house}'
+  diamonds:
+    slots: [11]
+    material: DIAMOND
+    name: '&bDiamond Currency'
+    lore:
+      - '&7Set a diamond-only starting bid'
+      - '&7Chat format: d:<diamonds>'
+      - '&7Duration: 12 hours'
+      - '&eClick to enter'
+  both:
+    slots: [13]
+    material: NETHER_STAR
+    name: '&dCombined Bid'
+    lore:
+      - '&7Set a diamond and balance starting bid'
+      - '&7Chat format: c:<diamonds>/<balance>'
+      - '&7Duration: 12 hours'
+      - '&eClick to enter'
+  close:
+    slots: [22]
+    material: BARRIER
+    name: '&cClose'
+    lore: []
+auctions:
+  size: 54
+  title: '&8House Auctions / Bidding'
+  item:
+    material: IRON_DOOR
+    name: '&b{house}'
+    lore:
+      - '&7Category: &f{type}'
+      - '&7Currencies: &f{currency-mode}'
+      - '&7Starting diamonds: &f{starting-diamonds}'
+      - '&7Starting balance: &f{starting-balance}'
+      - '&7Current diamonds: &f{current-diamonds}'
+      - '&7Current balance: &f{current-balance}'
+      - '&7Highest bidder: &f{bidder}'
+      - '&7Time remaining: &f{remaining}'
+      - '&7Status: &f{status}'
+      - '&eClick to place a bid'
+bid:
+  size: 27
+  title: '&8Bid: &f{house}'
+  place:
+    slots: [13]
+    material: GOLD_INGOT
+    name: '&6Place Bid'
+    lore:
+      - '&7Current diamonds: &f{current-diamonds}'
+      - '&7Current balance: &f{current-balance}'
+      - '&7Highest bidder: &f{highest-bidder}'
+      - '&7Minimum diamonds: &f{minimum-diamonds}'
+      - '&7Minimum balance: &f{minimum-balance}'
+      - '&7Time remaining: &f{remaining}'
+      - '&7Status: &f{status}'
+      - '&7Chat format: &f{bid-format}'
+      - '&eClick to enter'
+  close:
+    slots: [22]
+    material: BARRIER
+    name: '&cClose'
+    lore: []
