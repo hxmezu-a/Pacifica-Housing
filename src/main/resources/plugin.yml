@@ -1,18 +1,23 @@
 name: Pacifica-Housing
 version: ${version}
-main: com.kodari.housing.HousingPlugin
+main: com.districtx.housing.HousingPlugin
 api-version: '1.20'
-author: Kodari
-softdepend:
+author: DistrictX Developers Officials
+depend:
   - Vault
-  - KodariCurrency
+softdepend:
+  - Pacifica-Core
+  - LuckPerms
   - CrackShot
   - WeaponMechanics
 commands:
   houses:
     description: Open player house menus
-    usage: /houses [owned|agent]
+    usage: /houses <owned|realestate>
     aliases: [house]
+  myhouses:
+    description: Open your owned houses
+    usage: /myhouses
   housesadmin:
     description: Administrative house management
     usage: /housesadmin <create|adddoor|addvault|setoutside|setinside|grant|reload>

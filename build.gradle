@@ -1,26 +1,39 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
-group = 'com.kodari'
+group = 'com.districtx'
 version = '1.0.0'
 
 repositories {
     mavenCentral()
     maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url = 'https://jitpack.io' }
+    maven { url = 'https://mvn.wesjd.net/' }
+    maven { url = 'https://repo.codemc.io/repository/maven-snapshots/' }
 }
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT'
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
+    compileOnly 'net.luckperms:api:5.4'
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
     implementation 'com.github.cryptomorin:XSeries:11.2.0.1'
+    implementation 'net.wesjd:anvilgui:1.10.10-SNAPSHOT'
 }
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -31,4 +44,22 @@ processResources {
     filesMatching('plugin.yml') {
         expand(version: project.version)
     }
+}
+
+tasks.named('jar') {
+    archiveBaseName = 'Pacifica-Housing'
+}
+
+tasks.named('shadowJar') {
+    archiveBaseName = 'Pacifica-Housing'
+    archiveClassifier = ''
+    configurations = [project.configurations.runtimeClasspath]
+    relocate 'net.wesjd.anvilgui', 'com.districtx.housing.anvilgui'
+    dependencies {
+        include dependency('net.wesjd:anvilgui')
+    }
+}
+
+tasks.named('build') {
+    dependsOn tasks.named('shadowJar')
 }

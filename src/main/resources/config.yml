@@ -1,5 +1,6 @@
 transition:
   delay-seconds: 3
+  owned-house-delay-seconds: 10
   blindness-duration-seconds: 3
 selling:
   refund-percent: 60.0
@@ -12,3 +13,11 @@ restrictions:
     - BOW
     - CROSSBOW
     - TRIDENT
+listing-fee:
+  enabled: true
+  max-starting-bid: 1000000000000
+  rank-multipliers:
+    rank-1: 0.15
+    rank-2: 0.30
+    rank-3: 0.50
+    default: 1.0
