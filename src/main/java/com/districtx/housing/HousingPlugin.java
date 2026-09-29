@@ -5,7 +5,6 @@ import com.districtx.housing.inventory.gui.GUIManager;
 import com.districtx.housing.inventory.gui.OwnerGUI;
 import com.districtx.housing.inventory.gui.OwnedHousesGUI;
 import com.districtx.housing.inventory.gui.OwnedHouseDetailsGUI;
-import com.districtx.housing.inventory.gui.MyHousesGUI;
 import com.districtx.housing.inventory.gui.AvailableHousesGUI;
 import com.districtx.housing.inventory.gui.RealEstateAgentGUI;
 import com.districtx.housing.inventory.gui.AvailableHouseDetailsGUI;
@@ -19,6 +18,8 @@ import com.districtx.housing.inventory.gui.MyListingsGUI;
 import com.districtx.housing.inventory.gui.BuyoutConfirmGUI;
 import com.districtx.housing.api.PacificaHousingAPI;
 import com.districtx.housing.api.PacificaHousingService;
+import com.districtx.housing.api.event.HouseTeleportEvent;
+import com.districtx.housing.api.event.VaultOpenEvent;
 import com.districtx.housing.api.auction.AuctionCancellationResult;
 import com.districtx.housing.model.House;
 import com.districtx.housing.model.HouseAuction;
@@ -31,7 +32,6 @@ import com.districtx.housing.util.MessageService;
 import com.districtx.housing.integration.OptionalDependencyManager;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
-import com.cryptomorin.xseries.XSound;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -43,6 +43,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import com.districtx.housing.api.HouseInfo;
+import com.districtx.housing.api.VaultInfo;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.scheduler.BukkitTask;
@@ -65,7 +67,6 @@ import java.util.Locale;
 
 public class HousingPlugin extends JavaPlugin {
     private static final long AUCTION_DURATION_SECONDS = 12L * 60L * 60L;
-    private static final int TAXI_DELAY_SECONDS = 10;
     private HouseManager houseManager;
     private AuctionManager auctionManager;
     private CurrencyServiceBridge currencyService;
@@ -105,7 +106,6 @@ public class HousingPlugin extends JavaPlugin {
         HousesCommand command = new HousesCommand(this);
         getCommand("houses").setExecutor(command);
         getCommand("houses").setTabCompleter(command);
-        getCommand("myhouses").setExecutor(new MyHousesCommand(this));
         HousesAdminCommand adminCommand = new HousesAdminCommand(this);
         getCommand("housesadmin").setExecutor(adminCommand);
         getCommand("housesadmin").setTabCompleter(adminCommand);
@@ -178,20 +178,38 @@ public class HousingPlugin extends JavaPlugin {
             messages.send(player, "vault-unavailable", java.util.Collections.emptyMap());
             return;
         }
-        if (!house.getVaults().contains(vault) || getVaultInventory(vault) == null) {
+        if (!house.getVaults().contains(vault) || getVaultInventory(house, vault) == null) {
             messages.send(player, "vault-unavailable", java.util.Collections.emptyMap());
             return;
+        }
+        if (housingApi != null) {
+            int number = houseManager.getVaultNumber(house, vault);
+            HouseInfo houseInfo = housingApi.houses().getHouse(house.getName()).orElse(null);
+            VaultInfo vaultInfo = housingApi.vaults().getVault(house.getName(), number).orElse(null);
+            if (houseInfo != null && vaultInfo != null) {
+                VaultOpenEvent event = new VaultOpenEvent(player, houseInfo, vaultInfo);
+                Bukkit.getPluginManager().callEvent(event);
+                if (event.isCancelled()) {
+                    return;
+                }
+            }
         }
         guiManager.openGUI(new VaultGUI(this, house, vault), player);
     }
 
-    public Inventory getVaultInventory(HouseVault vault) {
-        if (vault == null) {
+    public Inventory getVaultInventory(House house, HouseVault vault) {
+        if (house == null || vault == null) {
             return null;
         }
         Inventory inventory = vaultInventories.get(vault.getId());
         if (inventory == null) {
-            inventory = Bukkit.createInventory(null, HouseVault.INVENTORY_SIZE, "Vault");
+            int number = houseManager.getVaultNumber(house, vault);
+            if (number < 1) {
+                return null;
+            }
+            String title = org.bukkit.ChatColor.translateAlternateColorCodes('&',
+                    "&a&l" + house.getName() + ":#" + number);
+            inventory = Bukkit.createInventory(null, HouseVault.INVENTORY_SIZE, title);
             inventory.setContents(Arrays.copyOf(vault.getContents(), HouseVault.INVENTORY_SIZE));
             vaultInventories.put(vault.getId(), inventory);
             syncPhysicalVault(vault, inventory);
@@ -240,10 +258,6 @@ public class HousingPlugin extends JavaPlugin {
 
     public void openOwnedHouses(Player player) {
         guiManager.openGUI(new OwnedHousesGUI(this, player), player);
-    }
-
-    public void openMyHouses(Player player) {
-        guiManager.openGUI(new MyHousesGUI(this, player), player);
     }
 
     public void openOwnedHouseDetails(Player player, House house) {
@@ -991,7 +1005,8 @@ public class HousingPlugin extends JavaPlugin {
             messages.send(player, "house-not-ready", java.util.Collections.emptyMap());
             return;
         }
-        beginTaxiTeleport(player, house, target);
+        player.closeInventory();
+        beginTransition(player, house, target, player.getUniqueId(), getEntryDelaySeconds(player), true, true);
     }
 
     public void teleportOwnerThroughDoor(Player player, House house, HouseDoor door) {
@@ -1112,56 +1127,6 @@ public class HousingPlugin extends JavaPlugin {
         return currencyService.isAvailable() && currencyService.give(player, amount);
     }
 
-    private void beginTaxiTeleport(Player player, House house, Location target) {
-        UUID uuid = player.getUniqueId();
-        long token = ++nextTransitionToken;
-        transitioning.add(uuid);
-        transitionTargets.put(uuid, target.clone());
-        transitionTokens.put(uuid, token);
-        player.closeInventory();
-        messages.send(player, "taxi-called", java.util.Collections.emptyMap());
-        sendTaxiCountdown(player, TAXI_DELAY_SECONDS);
-        scheduleTaxiTransition(player, house, target, uuid, token, TAXI_DELAY_SECONDS - 1);
-    }
-
-    private void scheduleTaxiTransition(Player player, House house, Location target, UUID uuid,
-                                         long token, int remaining) {
-        BukkitTask task = getServer().getScheduler().runTaskLater(this, () -> {
-            if (!player.isOnline() || !isCurrentTransition(uuid, token)) {
-                return;
-            }
-            transitionTasks.remove(uuid);
-            if (remaining <= 0) {
-                int effectTicks = 2 * 20;
-                XPotion.matchXPotion("BLINDNESS")
-                        .map(effect -> effect.buildPotionEffect(effectTicks, 0))
-                        .ifPresent(player::addPotionEffect);
-                XPotion.matchXPotion("INVISIBILITY")
-                        .map(effect -> effect.buildPotionEffect(effectTicks, 0))
-                        .ifPresent(player::addPotionEffect);
-                boolean teleported = player.teleport(target);
-                if (teleported) {
-                    refreshPlayerHouseStatus(player, target, true);
-                }
-                clearTransition(uuid);
-                if (teleported) {
-                    messages.send(player, "taxi-dropped", java.util.Collections.emptyMap());
-                }
-                return;
-            }
-            if (remaining <= 5) {
-                sendTaxiCountdown(player, remaining);
-            }
-            scheduleTaxiTransition(player, house, target, uuid, token, remaining - 1);
-        }, 20L);
-        transitionTasks.put(uuid, task);
-    }
-
-    private void sendTaxiCountdown(Player player, int seconds) {
-        messages.send(player, "taxi-arriving", values("seconds", String.valueOf(seconds)));
-        XSound.matchXSound("UI_BUTTON_CLICK").ifPresent(sound -> sound.play(player));
-    }
-
     private void clearTransition(UUID uuid) {
         transitioning.remove(uuid);
         transitionTargets.remove(uuid);
@@ -1240,6 +1205,17 @@ public class HousingPlugin extends JavaPlugin {
                                   long token, boolean leaving, boolean updateInsideState) {
         if (!isCurrentTransition(uuid, token)) {
             return;
+        }
+        if (updateInsideState && housingApi != null) {
+            HouseInfo houseInfo = housingApi.houses().getHouse(house.getName()).orElse(null);
+            if (houseInfo != null) {
+                HouseTeleportEvent event = new HouseTeleportEvent(player, houseInfo, target);
+                Bukkit.getPluginManager().callEvent(event);
+                if (event.isCancelled()) {
+                    clearTransition(uuid);
+                    return;
+                }
+            }
         }
         if (player.teleport(target) && updateInsideState) {
             refreshPlayerHouseStatus(player, target, true);

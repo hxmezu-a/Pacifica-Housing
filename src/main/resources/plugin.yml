@@ -15,9 +15,6 @@ commands:
     description: Open player house menus
     usage: /houses <owned|realestate>
     aliases: [house]
-  myhouses:
-    description: Open your owned houses
-    usage: /myhouses
   housesadmin:
     description: Administrative house management
     usage: /housesadmin <create|adddoor|addvault|setoutside|setinside|grant|reload>

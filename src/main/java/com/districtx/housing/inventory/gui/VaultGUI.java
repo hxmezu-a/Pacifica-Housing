@@ -29,7 +29,7 @@ public class VaultGUI extends InventoryGUI {
 
     @Override
     protected Inventory createInventory() {
-        return plugin.getVaultInventory(vault);
+        return plugin.getVaultInventory(house, vault);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class VaultGUI extends InventoryGUI {
             event.setCancelled(true);
             return;
         }
-        plugin.getVaultInventory(vault);
+        plugin.getVaultInventory(house, vault);
     }
 
     @Override

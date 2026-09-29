@@ -2,6 +2,7 @@ package com.districtx.housing.api.house;
 
 import com.districtx.housing.api.HouseInfo;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,4 +33,14 @@ public interface HouseService {
 
     /** Finds a house whose configured door occupies the given block. */
     Optional<HouseInfo> getHouseAt(Location location);
+
+    /**
+     * Begins the existing owner-only teleport flow to a player's house.
+     * This does not bypass Pacifica-Housing's ownership or transition rules.
+     *
+     * @param player online player requesting the teleport
+     * @param houseId stable house ID or case-insensitive house name
+     * @return true if the teleport flow was accepted, otherwise false
+     */
+    boolean teleportToHouse(Player player, String houseId);
 }

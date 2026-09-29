@@ -8,6 +8,7 @@ import com.districtx.housing.api.vault.VaultService;
 import com.districtx.housing.model.House;
 import com.districtx.housing.model.HouseAuction;
 import com.districtx.housing.model.HouseDoor;
+import com.districtx.housing.model.HouseVault;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -19,12 +20,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/** Bukkit service implementation; integrations should use {@link PacificaHousingAPI}. */
 public final class PacificaHousingService implements PacificaHousingAPI {
     private final HousingPlugin plugin;
     private final HouseService houses;
     private final AuctionService auctions;
     private final VaultService vaults;
 
+    /** Creates the service adapter for the plugin lifecycle. */
     public PacificaHousingService(HousingPlugin plugin) {
         this.plugin = plugin;
         this.houses = new HouseServiceAdapter();
@@ -187,7 +190,8 @@ public final class PacificaHousingService implements PacificaHousingAPI {
         String ownerName = house.getOwner() == null ? null : Bukkit.getOfflinePlayer(house.getOwner()).getName();
         return new HouseInfo(house.getName().toLowerCase(java.util.Locale.ROOT), house.getName(), house.getPrice(), type(house),
                 house.getOwner(), ownerName, primary == null ? null : primary.getDoor(),
-                primary == null ? null : primary.getOutside(), null, status, availability, doors, auction);
+                primary == null ? null : primary.getOutside(), null, status, availability, doors, auction,
+                house.getVaults().size());
     }
 
     private HouseStatus status(House house, HouseDoor primary, AuctionInfo auction) {
@@ -208,11 +212,14 @@ public final class PacificaHousingService implements PacificaHousingAPI {
         if (auction == null) {
             return null;
         }
+        String sellerName = Bukkit.getOfflinePlayer(auction.getSeller()).getName();
+        UUID bidder = auction.getHighestBidder();
+        String bidderName = bidder == null ? null : Bukkit.getOfflinePlayer(bidder).getName();
         return new AuctionInfo(auction.getAuctionId(), auction.getHouseName().toLowerCase(java.util.Locale.ROOT),
-                auction.getHouseName(), auction.getSeller(),
+                auction.getHouseName(), auction.getSeller(), sellerName,
                 auction.getStartingDiamonds(), auction.getStartingBalance(), auction.getCurrentDiamonds(),
                 auction.getCurrentBalance(), auction.isBalanceAllowed(), auction.getEndAt(),
-                auction.getSettlementState(), auction.getHighestBidder(), auction.getBuyoutPrice(),
+                auction.getSettlementState(), bidder, bidderName, auction.getBuyoutPrice(),
                 auction.isBuyoutEnabled(), auction.getCommittedBids() == null
                         ? 0 : auction.getCommittedBids().size(), auction.getCreatedAt());
     }
@@ -277,6 +284,25 @@ public final class PacificaHousingService implements PacificaHousingAPI {
         public Optional<HouseInfo> getHouseAt(Location location) {
             return Optional.ofNullable(PacificaHousingService.this.getHouseAt(location));
         }
+
+        @Override
+        public boolean teleportToHouse(Player player, String houseId) {
+            if (player == null || !player.isOnline() || houseId == null) {
+                return false;
+            }
+            House house = plugin.getHouseManager().get(houseId);
+            if (house == null || !player.getUniqueId().equals(house.getOwner())
+                    || house.getDoors().isEmpty() || plugin.isTransitioning(player)) {
+                return false;
+            }
+            HouseDoor door = house.getDoors().get(0);
+            Location target = door.getOutside();
+            if (target == null || target.getWorld() == null) {
+                return false;
+            }
+            plugin.beginOwnedHouseTeleport(player, house, door);
+            return true;
+        }
     }
 
     private final class AuctionServiceAdapter implements AuctionService {
@@ -334,6 +360,44 @@ public final class PacificaHousingService implements PacificaHousingAPI {
         public int getVaultCount(String houseId) {
             House house = houseId == null ? null : plugin.getHouseManager().get(houseId);
             return house == null ? 0 : house.getVaults().size();
+        }
+
+        @Override
+        public Optional<VaultInfo> getVault(String houseId, int vaultNumber) {
+            if (houseId == null || vaultNumber < 1) {
+                return Optional.empty();
+            }
+            House house = plugin.getHouseManager().get(houseId);
+            if (house == null || vaultNumber > house.getVaults().size()) {
+                return Optional.empty();
+            }
+            HouseVault vault = house.getVaults().get(vaultNumber - 1);
+            return Optional.of(vaultSnapshot(house, vault, vaultNumber));
+        }
+
+        @Override
+        public List<VaultInfo> getVaults(String houseId) {
+            House house = houseId == null ? null : plugin.getHouseManager().get(houseId);
+            if (house == null) {
+                return Collections.emptyList();
+            }
+            List<VaultInfo> result = new ArrayList<>();
+            for (int index = 0; index < house.getVaults().size(); index++) {
+                result.add(vaultSnapshot(house, house.getVaults().get(index), index + 1));
+            }
+            return Collections.unmodifiableList(result);
+        }
+
+        @Override
+        public boolean vaultExists(String houseId, int vaultNumber) {
+            return getVault(houseId, vaultNumber).isPresent();
+        }
+
+        private VaultInfo vaultSnapshot(House house, HouseVault vault, int number) {
+            String title = org.bukkit.ChatColor.translateAlternateColorCodes('&',
+                    "&a&l" + house.getName() + ":#" + number);
+            return new VaultInfo(vault.getId(), house.getName().toLowerCase(java.util.Locale.ROOT),
+                    house.getName(), house.getOwner(), number, title, vault.getLocation(), vault.getContents());
         }
     }
 }

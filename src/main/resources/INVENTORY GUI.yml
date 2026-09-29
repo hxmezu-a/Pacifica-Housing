@@ -1,8 +1,6 @@
 owned:
   size: 54
   title: '&8Your Houses'
-myhouses:
-  title: '&8My Houses'
 owned-details:
   size: 54
   title: '&8House: &f{house}'
